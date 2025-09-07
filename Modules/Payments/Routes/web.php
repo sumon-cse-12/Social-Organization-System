@@ -5,6 +5,6 @@ use Modules\Payments\Http\Controllers\PaymentsController;
 
 Route::prefix('payments')->middleware(['auth:member'])->group(function () {
     Route::get('/index', [PaymentsController::class, 'index'])->name('index');
-    Route::get('/{method}/success', [PaymentsController::class, 'success'])->name('payment.success');
+    Route::post('/pay/now/{method}', [PaymentsController::class, 'pay'])->name('pay.now');
     Route::get('/{method}/cancel', [PaymentsController::class, 'cancel'])->name('payment.cancel');
 });

@@ -37,6 +37,17 @@ const isActive = (url) => page.url.includes(url)
           </Link>
         </li>
 
+           <li class="nav-item">
+          <Link
+            href="/member/all"
+            class="nav-link"
+            :class="{ 'active': isActive('all') }"
+          >
+            <i class="nav-icon fas fa-tachometer-alt"></i>
+            <p>All Members</p>
+          </Link>
+        </li>
+
            <!-- Member Profile -->
         <li class="nav-item">
           <Link

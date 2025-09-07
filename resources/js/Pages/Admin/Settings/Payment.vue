@@ -1,3 +1,99 @@
+<template>
+  <div class="settings-container">
+    <h1 class="title">Payment Settings</h1>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button :class="{ active: activeTab === 'paypal' }" @click="activeTab='paypal'">
+        <i class="fab fa-paypal me-1"></i> PayPal
+      </button>
+      <button :class="{ active: activeTab === 'stripe' }" @click="activeTab='stripe'">
+        <i class="fab fa-stripe me-1"></i> Stripe
+      </button>
+      <button :class="{ active: activeTab === 'razorpay' }" @click="activeTab='razorpay'">
+        <i class="fas fa-credit-card me-1"></i> Razorpay
+      </button>
+      <button :class="{ active: activeTab === 'offline' }" @click="activeTab='offline'">
+        <i class="fas fa-money-bill-wave me-1"></i> Offline
+      </button>
+    </div>
+
+    <!-- Form Card -->
+    <div class="form-card">
+      <!-- Mode & Active Toggle (Not for Offline) -->
+      <div v-if="activeTab !== 'offline'" class="form-row">
+        <div>
+          <label>Mode</label>
+          <select v-model="form.mode">
+            <option value="sandbox">Sandbox</option>
+            <option value="live">Live</option>
+          </select>
+        </div>
+        <div>
+          <label>Status</label>
+          <select v-model="form.isActive">
+            <option :value="true">Active</option>
+            <option :value="false">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Gateway Fields -->
+      <div class="gateway-fields">
+        <!-- PayPal -->
+        <div v-if="activeTab === 'paypal'">
+          <div>
+            <label>Client ID</label>
+            <input type="text" v-model="form.apiKey" placeholder="PayPal Client ID" />
+          </div>
+          <div>
+            <label>Secret Key</label>
+            <input type="password" v-model="form.apiSecret" placeholder="PayPal Secret Key" />
+          </div>
+        </div>
+
+        <!-- Stripe -->
+        <div v-if="activeTab === 'stripe'">
+          <div>
+            <label>Publishable Key</label>
+            <input type="text" v-model="form.apiKey" placeholder="Stripe Publishable Key" />
+          </div>
+          <div>
+            <label>Secret Key</label>
+            <input type="password" v-model="form.apiSecret" placeholder="Stripe Secret Key" />
+          </div>
+        </div>
+
+        <!-- Razorpay -->
+        <div v-if="activeTab === 'razorpay'">
+          <div>
+            <label>Key ID</label>
+            <input type="text" v-model="form.apiKey" placeholder="Razorpay Key ID" />
+          </div>
+          <div>
+            <label>Key Secret</label>
+            <input type="password" v-model="form.apiSecret" placeholder="Razorpay Key Secret" />
+          </div>
+        </div>
+
+        <!-- Offline -->
+        <div v-if="activeTab === 'offline'">
+          <div>
+            <label>Offline Payment Note</label>
+            <textarea v-model="form.offlineNote" rows="4" placeholder="Instructions for offline payment"></textarea>
+          </div>
+          <p class="info-text">
+            ⚡ This note will be displayed to customers choosing <b>Offline Payment</b>.
+          </p>
+        </div>
+      </div>
+
+      <!-- Save Button -->
+      <button class="save-btn" @click="submit">Save Settings</button>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { useForm, usePage } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
@@ -7,15 +103,9 @@ import 'vue3-toastify/dist/index.css'
 
 defineOptions({ layout: AdminLayout })
 
-// Props from controller
-const props = defineProps({
-  settings: Object
-})
-
-// Active tab
+const props = defineProps({ settings: Object })
 const activeTab = ref('paypal')
 
-// Form
 const form = useForm({
   gateway: 'paypal',
   mode: props.settings.paypal?.mode || 'sandbox',
@@ -25,7 +115,6 @@ const form = useForm({
   isActive: props.settings.paypal?.isActive ?? true
 })
 
-// Update form when tab changes
 watch(activeTab, (tab) => {
   form.gateway = tab
   form.mode = props.settings[tab]?.mode || 'sandbox'
@@ -35,116 +124,39 @@ watch(activeTab, (tab) => {
   form.offlineNote = props.settings[tab]?.offlineNote || ''
 })
 
-// Show success toast if flash exists
 const page = usePage()
 onMounted(() => {
-  if (page.props.flash?.success) {
-    toast.success(page.props.flash.success, { position: 'top-right' })
-  }
+  if (page.props.flash?.success) toast.success(page.props.flash.success, { position: 'top-right' })
 })
 
-// Handle form submission
 const submit = () => {
   form.post('/admin/payment/settings/store', {
-    onSuccess: () => {
-      toast.success('Payment settings saved successfully!', { position: 'top-right' })
-    },
-    onError: (errors) => {
-      toast.error('Error saving settings!', { position: 'top-right' })
-    }
+    onSuccess: () => toast.success('Payment settings saved successfully!', { position: 'top-right' }),
+    onError: () => toast.error('Error saving settings!', { position: 'top-right' })
   })
 }
 </script>
 
-<template>
-  <div class="p-6 max-w-4xl mx-auto">
-    <h1 class="text-2xl font-bold mb-6">Payment Settings</h1>
+<style scoped>
+.settings-container { max-width: 700px; margin: 50px auto; font-family: 'Inter', sans-serif; }
+.title { font-size: 2rem; font-weight: 700; margin-bottom: 30px; text-align: center; color: #2c3e50; }
 
-    <!-- Tabs -->
-    <div class="border-b mb-6">
-      <ul class="flex space-x-4">
-        <li>
-          <button @click="activeTab = 'paypal'"
-                  :class="activeTab === 'paypal' ? 'border-b-2 border-blue-600 text-blue-600 font-semibold' : 'text-gray-500'"
-                  class="pb-2 px-3 transition-colors duration-200">
-            <i class="fab fa-paypal me-1"></i> PayPal
-          </button>
-        </li>
-        <li>
-          <button @click="activeTab = 'stripe'"
-                  :class="activeTab === 'stripe' ? 'border-b-2 border-purple-600 text-purple-600 font-semibold' : 'text-gray-500'"
-                  class="pb-2 px-3 transition-colors duration-200">
-            <i class="fab fa-stripe me-1"></i> Stripe
-          </button>
-        </li>
-        <li>
-          <button @click="activeTab = 'offline'"
-                  :class="activeTab === 'offline' ? 'border-b-2 border-gray-600 text-gray-800 font-semibold' : 'text-gray-500'"
-                  class="pb-2 px-3 transition-colors duration-200">
-            <i class="fas fa-money-bill-wave me-1"></i> Offline
-          </button>
-        </li>
-      </ul>
-    </div>
+.tabs { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+.tabs button { flex: 1; padding: 12px 15px; background: #f1f3f5; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+.tabs button.active { background: #4e73df; color: #fff; transform: translateY(-2px); }
 
-    <!-- Form Card -->
-    <div class="bg-white shadow rounded-lg p-6 space-y-6">
-      <!-- Mode & Active Toggle -->
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div class="flex flex-col">
-          <label class="text-sm font-medium mb-1">Mode</label>
-          <select v-model="form.mode" class="w-48 rounded border-gray-300 text-sm px-3 py-2">
-            <option value="sandbox">Sandbox</option>
-            <option value="live">Live</option>
-          </select>
-        </div>
-        <div class="flex items-center gap-2">
-          <input type="checkbox" id="activeToggle" v-model="form.isActive" class="h-5 w-5 text-blue-600">
-          <label for="activeToggle" class="text-sm font-medium">Enable Gateway</label>
-        </div>
-      </div>
+.form-card { background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 12px 28px rgba(0,0,0,0.08); transition: 0.3s; }
+.form-row { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+.form-row div { flex: 1; display: flex; flex-direction: column; }
 
-      <!-- PayPal -->
-      <div v-if="activeTab === 'paypal'" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium mb-1">Client ID</label>
-          <input v-model="form.apiKey" type="text" class="w-full rounded border-gray-300 text-sm px-3 py-2" placeholder="PayPal Client ID" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Secret</label>
-          <input v-model="form.apiSecret" type="password" class="w-full rounded border-gray-300 text-sm px-3 py-2" placeholder="PayPal Secret" />
-        </div>
-      </div>
+label { margin-bottom: 6px; font-weight: 500; color: #555; }
+input, select, textarea { padding: 10px 12px; border-radius: 12px; border: 1px solid #ddd; font-size: 0.95rem; width: 100%; box-sizing: border-box; transition: 0.2s; }
+input:focus, select:focus, textarea:focus { border-color: #4e73df; box-shadow: 0 0 0 2px rgba(78,115,223,0.2); outline: none; }
+textarea { resize: vertical; min-height: 80px; }
 
-      <!-- Stripe -->
-      <div v-if="activeTab === 'stripe'" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium mb-1">Publishable Key</label>
-          <input v-model="form.apiKey" type="text" class="w-full rounded border-gray-300 text-sm px-3 py-2" placeholder="Stripe Publishable Key" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Secret Key</label>
-          <input v-model="form.apiSecret" type="password" class="w-full rounded border-gray-300 text-sm px-3 py-2" placeholder="Stripe Secret Key" />
-        </div>
-      </div>
+.gateway-fields { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; }
+.info-text { font-size: 0.8rem; color: #888; margin-top: 5px; }
 
-      <!-- Offline -->
-      <div v-if="activeTab === 'offline'" class="space-y-2">
-        <div>
-          <label class="block text-sm font-medium mb-1">Offline Payment Note</label>
-          <textarea v-model="form.offlineNote" rows="4" class="w-full rounded border-gray-300 text-sm px-3 py-2" placeholder="Instructions for offline payment"></textarea>
-        </div>
-        <p class="text-xs text-gray-500">
-          ⚡ This note will be displayed to customers choosing <b>Offline Payment</b>.
-        </p>
-      </div>
-
-      <!-- Save Button -->
-      <div class="mt-4">
-        <button @click="submit" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition">
-          Save Settings
-        </button>
-      </div>
-    </div>
-  </div>
-</template>
+.save-btn { width: 100%; padding: 14px 0; margin-top: 20px; background: #4e73df; color: #fff; font-weight: 600; border: none; border-radius: 50px; cursor: pointer; transition: 0.3s; }
+.save-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
+</style>

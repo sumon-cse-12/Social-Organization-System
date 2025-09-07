@@ -11,8 +11,10 @@
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
+        "league/omnipay": "^3.2",
         "nwidart/laravel-modules": "9.0",
-        "srmklive/paypal": "~3.0",
+        "omnipay/paypal": "^3.0",
+        "omnipay/stripe": "^3.2",
         "tightenco/ziggy": "^2.0"
     },
     "require-dev": {

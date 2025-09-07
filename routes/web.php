@@ -24,10 +24,7 @@ use App\Http\Controllers\Admin\PaymentSettingsController;
 
 use App\Http\Controllers\Member\MemberDashboardController;
 
-Route::get('/paypal-test', function() {
-    $paypal = new PayPal();
-    dd($paypal);
-});
+
 
 Route::middleware('guest')->group(function () {
     Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('admin.login.form');
@@ -63,6 +60,11 @@ Route::prefix('member')->group(function () {
         Route::put('/profile/update', [ProfileController::class, 'update'])->name('member.profile.update');
         Route::get('fees', [FeeController::class, 'index'])->name('member.fees');
         Route::post('fees/{fee}/pay', [FeeController::class, 'payFee'])->name('member.fees.pay');
+
+        Route::get('all', [ProfileController::class, 'all_member'])->name('get.all');
+
+        Route::get('handleReturn', [FeeController::class, 'handleReturn'])->name('handleReturn');
+        Route::get('handleCancel', [FeeController::class, 'handleCancel'])->name('handleCancel');
     });
 });
 

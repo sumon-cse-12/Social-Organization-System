@@ -1,86 +1,80 @@
 <?php
-
 namespace Modules\Payments\Http\Controllers;
 
 use Inertia\Inertia;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
-use Illuminate\Contracts\Support\Renderable;
+use App\Models\PaymentRequest;
+use App\Http\Controllers\Controller;
+use Modules\Payments\Services\Gateway\GatewayFactory;
 
 class PaymentsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     * @return Renderable
-     */
-
-
     public function index()
     {
-       $member = auth('member')->user();
-        if (!$member) {
-            return redirect()->route('member.login');
-        }
+        $member = auth('member')->user();
+        if (!$member) return redirect()->route('member.login');
+
         return Inertia::render('Member/CheckOut');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     * @return Renderable
-     */
-    public function create()
-    {
-        return view('payments::create');
-    }
+    public function pay(Request $request)
+{
 
-    /**
-     * Store a newly created resource in storage.
-     * @param Request $request
-     * @return Renderable
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+    $request->validate([
+        'payment_method' => 'required|string',
+        'amount' => 'required|numeric|min:1',
+    ]);
 
-    /**
-     * Show the specified resource.
-     * @param int $id
-     * @return Renderable
-     */
-    public function show($id)
-    {
-        return view('payments::show');
-    }
+    $gateway = GatewayFactory::make($request->payment_method);
+    $approval = $gateway->createOrder(
+        $request->amount,
+        'USD',
+        route('handleReturn'),
+        route('handleCancel')
+    );
 
-    /**
-     * Show the form for editing the specified resource.
-     * @param int $id
-     * @return Renderable
-     */
-    public function edit($id)
-    {
-        return view('payments::edit');
-    }
+    PaymentRequest::create([
+        'member_id' => auth()->id(),
+        'gateway' => $request->payment_method,
+        'amount' => $request->amount,
+        'status' => 'pending',
+        'request_payload' => json_encode(['amount' => $request->amount]),
+    ]);
 
-    /**
-     * Update the specified resource in storage.
-     * @param Request $request
-     * @param int $id
-     * @return Renderable
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
+    return response()->json($approval);
+}
 
-    /**
-     * Remove the specified resource from storage.
-     * @param int $id
-     * @return Renderable
-     */
-    public function destroy($id)
+
+    // public function handleReturn(Request $request)
+    // {
+    //     $gateway = GatewayFactory::make($request->payment_method);
+    //     $capture = $gateway->capturePayment($request->token);
+
+    //     $payment = Transaction::where('member_id', auth()->id())
+    //         ->where('status', 'pending')
+    //         ->latest()
+    //         ->first();
+
+    //     $payment->update([
+    //         'status' => $capture['status'] === 'COMPLETED' ? 'completed' : 'failed',
+    //         'response_payload' => json_encode($capture),
+    //     ]);
+
+    //     return redirect()->route('dashboard')->with('success', 'Payment completed.');
+    // }
+
+    public function refund(PaymentRequest $payment, Request $request)
     {
-        //
+        $gateway = GatewayFactory::make($payment->gateway);
+
+        $refund = $gateway->refundPayment($payment->id, $payment->amount, $request->reason ?? '');
+
+        $payment->update([
+            'status' => 'refunded',
+            'response_payload' => json_encode($refund),
+        ]);
+
+        return back()->with('success', 'Payment refunded successfully.');
     }
 }

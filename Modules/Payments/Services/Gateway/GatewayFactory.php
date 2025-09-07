@@ -1,8 +1,14 @@
 <?php
+
 namespace Modules\Payments\Services\Gateway;
 
 use InvalidArgumentException;
 use App\Models\PaymentSetting;
+use Modules\Payments\Services\Gateway\Gateway;
+use Modules\Payments\Services\Gateway\PayPalGateway;
+use Modules\Payments\Services\Gateway\StripeGateway;
+use Modules\Payments\Services\Gateway\OfflineGateway;
+use Modules\Payments\Services\Gateway\PaymentGatewayInterface;
 
 class GatewayFactory
 {
@@ -18,21 +24,15 @@ class GatewayFactory
             throw new InvalidArgumentException("Gateway [$method] not configured or inactive.");
         }
 
-        $value = is_array($setting->value) ? $setting->value : json_decode($setting->value ?? '[]', true);
+        $credentials = is_array($setting->value)
+            ? $setting->value
+            : json_decode($setting->value ?? '[]', true);
 
-        $credentials = match ($method) {
-            'paypal' => [
-                'mode'      => $setting->mode,
-                'apiKey'    => $value['apiKey'] ?? $value['client_id'] ?? null,
-                'apiSecret' => $value['apiSecret'] ?? $value['client_secret'] ?? null,
-            ],
+        return match ($method) {
+            'paypal' => app(PayPalGateway::class)->setCredentials($credentials),
+            'stripe' => app(StripeGateway::class)->setCredentials($credentials),
+            'offline' => app(OfflineGateway::class)->setCredentials($credentials),
             default => throw new InvalidArgumentException("Gateway [$method] not supported."),
         };
-
-        $gateway = match ($method) {
-            'paypal' => app(PayPalGateway::class),
-        };
-
-        return $gateway->setCredentials($credentials);
     }
 }

@@ -7,61 +7,53 @@ use Omnipay\Omnipay;
 use Illuminate\Support\Facades\Log;
 use Modules\Payments\Services\Gateway\PaymentGatewayInterface;
 
-class PayPalGateway implements PaymentGatewayInterface
+class StripeGateway implements PaymentGatewayInterface
 {
     protected $gateway;
 
-    /**
-     * Set PayPal credentials and initialize gateway
-     */
-    public function setCredentials(array $credentials): self
+     public function setCredentials(array $credentials): self
     {
-        $credentials = [
-            'client_id'     => $credentials['client_id'] ?? $credentials['apiKey'] ?? null,
-            'client_secret' => $credentials['client_secret'] ?? $credentials['apiSecret'] ?? null,
-            'mode'          => $credentials['mode'] ?? 'sandbox',
-        ];
+        $secretKey = $credentials['secret_key'] ?? $credentials['apiSecret'] ?? null;
 
-
-        if (empty($credentials['client_id']) || empty($credentials['client_secret'])) {
-            throw new Exception('PayPal client_id and client_secret are required.');
+        if (!$secretKey) {
+            throw new Exception('Stripe secret key is required.');
         }
 
-        $this->gateway = Omnipay::create('PayPal_Rest');
-        $this->gateway->initialize([
-            'client_id' => trim($credentials['client_id']),
-            'client_secret'   => trim($credentials['client_secret']),
-            'testMode' => $credentials['mode'] === 'sandbox',
-        ]);
-
+        $this->gateway = Omnipay::create('Stripe');
+        $this->gateway->setApiKey($secretKey);
 
         return $this;
     }
 
-    /**
-     * Create a new PayPal order
-     */
-    public function createOrder(float $amount, string $currency, string $returnUrl, string $cancelUrl): array
+    public function createOrder(float $amount, string $currency, string $returnUrl = null, string $cancelUrl = null): array
     {
         try {
             $response = $this->gateway->purchase([
-                'amount'    => number_format($amount, 2, '.', ''),
-                'currency'  => $currency,
-                'returnUrl' => $returnUrl,
-                'cancelUrl' => $cancelUrl,
+                'amount' => number_format($amount, 2, '.', ''),
+                'currency' => $currency,
+                'source' => 'tok_visa', 
             ])->send();
+
+            if ($response->isSuccessful()) {
+                return [
+                    'status' => 'completed',
+                    'transaction_id' => $response->getTransactionReference(),
+                    'data' => $response->getData(),
+                ];
+            }
 
             if ($response->isRedirect()) {
                 return [
                     'approval_url' => $response->getRedirectUrl(),
-                    'order_id'     => $response->getTransactionReference(),
-                    'status'       => 'pending',
+                    'transaction_id' => $response->getTransactionReference(),
+                    'status' => 'pending',
                 ];
             }
 
-            throw new Exception($response->getMessage() ?? 'PayPal create order failed');
+            throw new Exception($response->getMessage() ?? 'Stripe purchase failed');
+
         } catch (Exception $e) {
-            Log::error('PayPal createOrder error', ['message' => $e->getMessage()]);
+            Log::error('Stripe createOrder error', ['message' => $e->getMessage()]);
             throw $e;
         }
     }
