@@ -25,8 +25,6 @@ watch(
   form,
   throttle(() => {
     const data = pickBy(form.value) // remove empty filters
-    // Use Inertia GET request
-    // Using the route '/member/all' in your project
     window.location.href = `/member/all?${new URLSearchParams(data).toString()}`
   }, 300),
   { deep: true }
@@ -70,7 +68,14 @@ watch(
               <td colspan="4" class="text-center">No members found.</td>
             </tr>
             <tr v-for="member in members.data" :key="member.id">
-              <td>{{ member.name }}</td>
+              <td>
+                 <Link
+              :href="`/member/profile/details/${member.id}`"
+              class="text-decoration-none"
+            >
+              {{ member.name }}
+            </Link>
+              </td>
               <td>{{ member.email }}</td>
               <td>
                 <span :class="`badge bg-${member.status === 'active' ? 'success' : 'secondary'}`">

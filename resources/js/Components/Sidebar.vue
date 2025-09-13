@@ -53,6 +53,33 @@ const isActive = (url) => page.url === url
           </Link>
         </li>
 
+        <strong class="text-white">Member Management</strong>
+
+        <li class="nav-item mt-3">
+          <Link
+            href="/admin/member/index"
+            class="nav-link"
+            :class="{ 'active': isActive('/admin/member/index') }"
+          >
+            <i class="nav-icon fas fa-plus"></i>
+            <p>Members</p>
+          </Link>
+        </li>
+
+
+        <strong class="text-white mt-3">Meeting Management</strong>
+
+        <li class="nav-item mt-3">
+          <Link
+            href="/admin/meetings/index"
+            class="nav-link"
+            :class="{ 'active': isActive('/admin/meetings/index') }"
+          >
+            <i class="nav-icon fas fa-plus"></i>
+            <p>Meetings</p>
+          </Link>
+        </li>
+
       </ul>
     </nav>
   </div>

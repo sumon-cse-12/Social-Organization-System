@@ -9,14 +9,18 @@ class MonthlyFee extends Model
 {
     use HasFactory;
 
-     protected $fillable = [
-        'member_id',
-        'amount',
-        'for_month',
-        'paid_date',
-        'status',
-        'notes'
-    ];
+    //  protected $fillable = [
+    //     'member_id',
+    //     'amount',
+    //     'for_month',
+    //     'paid_date',
+    //     'status',
+    //     'notes',
+    //     'gateway'
+    // ];
+
+        protected $guarded = ['id'];
+
 
     protected $casts = [
         'for_month' => 'date',

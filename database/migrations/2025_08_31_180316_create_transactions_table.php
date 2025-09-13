@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('member_id')->constrained()->onDelete('cascade');
-            $table->enum('type', ['fee', 'donation', 'expense', 'other']);
-            $table->string('gateway'); // 'paypal', 'stripe', 'offline'
+            $table->enum('type', ['joining_fee', 'monthly_fee', 'donation', 'event_fund', 'expense'])->index();
+            $table->string('gateway');
             $table->string('currency', 3)->default('USD');
             $table->decimal('amount', 10, 2);
             $table->string('status')->default('pending');

@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('title');
             $table->text('message');
             $table->enum('type', ['meeting', 'fee', 'event', 'election', 'general']);
+            $table->decimal('amount', 10, 2)->nullable();
+            $table->date('due_date')->nullable();
             $table->timestamp('read_at')->nullable();
             $table->string('related_type')->nullable();
             $table->unsignedBigInteger('related_id')->nullable();

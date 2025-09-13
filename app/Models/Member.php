@@ -33,4 +33,23 @@ class Member extends Authenticatable
         'approved_at' => 'datetime',
         'membership_fee' => 'decimal:2',
     ];
+
+    public function monthlyFees()
+    {
+        return $this->hasMany(MonthlyFee::class);
+    }
+    public function customNotifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+    public function meetings()
+    {
+        return $this->belongsToMany(
+            Meeting::class,
+            'meeting_member',   // pivot table
+            'member_id',        // current model key in pivot
+            'meeting_id'        // related model key in pivot
+        )->withPivot('attendance')
+         ->withTimestamps();
+    }
 }

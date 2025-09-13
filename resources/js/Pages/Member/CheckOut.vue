@@ -140,13 +140,13 @@ const submit = async () => {
       <div class="checkout-section">
         <h5>Select Payment Method</h5>
         <div class="payment-methods">
-          <label class="payment-btn" :class="{ active: selectedPaymentMethod==='stripe' }">
+          <label class="payment-btn d-none" :class="{ active: selectedPaymentMethod==='stripe' }">
             <input type="radio" value="stripe" v-model="selectedPaymentMethod"/>
             <i class="fab fa-cc-stripe"></i>
             <span>Stripe</span>
           </label>
 
-          <label class="payment-btn" :class="{ active: selectedPaymentMethod==='paypal' }">
+          <label class="payment-btn d-none" :class="{ active: selectedPaymentMethod==='paypal' }">
             <input type="radio" value="paypal" v-model="selectedPaymentMethod"/>
             <i class="fab fa-cc-paypal"></i>
             <span>PayPal</span>

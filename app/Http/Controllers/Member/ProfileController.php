@@ -10,19 +10,19 @@ use Illuminate\Support\Facades\Auth;
 
 class ProfileController extends Controller
 {
-   public function index()
-{
-    $member = Auth::guard('member')->user();
+    public function index()
+    {
+        $member = Auth::guard('member')->user();
 
-    if (!$member) {
-        return redirect()->route('member.login');
+        if (!$member) {
+            return redirect()->route('member.login');
+        }
+
+        return Inertia::render('Member/Profile/Show', [
+            'member' => $member,
+            'editUrl' => route('member.profile.edit'),
+        ]);
     }
-
-    return Inertia::render('Member/Profile/Show', [
-        'member' => $member,
-        'editUrl' => route('member.profile.edit'),
-    ]);
-}
 
 
     public function edit()
@@ -57,7 +57,7 @@ class ProfileController extends Controller
         return redirect()->route('member.profile')->with('success', 'Profile updated successfully.');
     }
 
-   public function all_member(Request $request)
+    public function all_member(Request $request)
     {
         return Inertia::render('Member/Profile/AllMembers', [
             'filters' => $request->only('search', 'status'),
@@ -65,8 +65,8 @@ class ProfileController extends Controller
                 ->when($request->input('search'), function ($query, $search) {
                     $query->where(function ($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%")
-                          ->orWhere('email', 'like', "%{$search}%")
-                          ->orWhere('status', 'like', "%{$search}%");
+                            ->orWhere('email', 'like', "%{$search}%")
+                            ->orWhere('status', 'like', "%{$search}%");
                     });
                 })
                 ->when($request->input('status'), function ($query, $status) {
@@ -83,5 +83,25 @@ class ProfileController extends Controller
                     'created_at' => $member->created_at,
                 ]),
         ]);
+    }
+
+    public function details($id)
+    {
+        $member = Member::findOrFail($id);
+        return Inertia::render('Member/Profile/Details', [
+            'member' => $member,
+            'editUrl' => route('member.profile.edit'),
+        ]);
+    }
+
+    public function notifications(Request $request)
+    {
+        $member = auth('member')->user();
+        $notifications = $member->customNotifications()
+            ->whereNull('read_at') // only unread
+            ->orderBy('created_at', 'desc') // latest first
+            ->get();
+
+        return response()->json($notifications);
     }
 }

@@ -14,9 +14,12 @@ class OfflineGateway implements PaymentGatewayInterface
 
     public function createOrder(float $amount, string $currency, string $returnUrl, string $cancelUrl): array
     {
+        
+
         return [
             'status'  => 'pending',
             'message' => $this->note,
+            'amount' => $amount,
         ];
     }
 

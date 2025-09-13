@@ -10,10 +10,10 @@
 </template>
 
 <script>
-import Header from '../Components/Header.vue';
+import MemberHeader from '../Components/MemberHeader.vue';
 import MemberSidebar  from '../Components/MemberSidebar.vue';
 import Footer from '../Components/Footer.vue';
 export default {
-  components: { Header, MemberSidebar, Footer }
+  components: { MemberHeader, MemberSidebar, Footer }
 }
 </script>

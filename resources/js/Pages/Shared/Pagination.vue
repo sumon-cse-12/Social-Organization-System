@@ -1,9 +1,9 @@
 <template>
   <nav v-if="links.length > 1" class="d-flex justify-content-center mt-4">
-    <ul class="pagination">
+    <ul class="pagination mb-0">
       <li
-        v-for="link in links"
-        :key="link.label"
+        v-for="(link, index) in links"
+        :key="index"
         :class="['page-item', { disabled: !link.url, active: link.active }]"
       >
         <!-- Inertia Link for clickable pages -->
@@ -11,14 +11,13 @@
           v-if="link.url"
           :href="link.url"
           class="page-link"
-        >
-          {{ decodeLabel(link.label) }}
-        </Link>
+          preserve-state
+          preserve-scroll
+          v-html="link.label"
+        />
 
         <!-- Span for disabled / placeholder links -->
-        <span v-else class="page-link">
-          {{ decodeLabel(link.label) }}
-        </span>
+        <span v-else class="page-link" v-html="link.label"></span>
       </li>
     </ul>
   </nav>
@@ -33,10 +32,4 @@ defineProps({
     required: true
   }
 })
-
-// Decode HTML entities (like &lt;, &gt;) safely
-const decodeLabel = (label) => {
-  const parser = new DOMParser()
-  return parser.parseFromString(label, 'text/html').body.textContent
-}
 </script>

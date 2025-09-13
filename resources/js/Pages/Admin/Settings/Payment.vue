@@ -79,6 +79,13 @@
         <!-- Offline -->
         <div v-if="activeTab === 'offline'">
           <div>
+            <label>Status</label>
+            <select v-model="form.isActive">
+              <option :value="true">Active</option>
+              <option :value="false">Inactive</option>
+            </select>
+          </div>
+          <div>
             <label>Offline Payment Note</label>
             <textarea v-model="form.offlineNote" rows="4" placeholder="Instructions for offline payment"></textarea>
           </div>

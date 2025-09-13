@@ -5,9 +5,10 @@ use Inertia\Inertia;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Models\PaymentRequest;
+use App\Enums\Payment\PaymentStatus;
 use App\Http\Controllers\Controller;
 use Modules\Payments\Services\Gateway\GatewayFactory;
-
+use Modules\Payments\Services\Transactions\TransactionTypeFactory;
 class PaymentsController extends Controller
 {
     public function index()
@@ -27,54 +28,36 @@ class PaymentsController extends Controller
     ]);
 
     $gateway = GatewayFactory::make($request->payment_method);
-    $approval = $gateway->createOrder(
-        $request->amount,
-        'USD',
-        route('handleReturn'),
-        route('handleCancel')
-    );
 
-    PaymentRequest::create([
-        'member_id' => auth()->id(),
-        'gateway' => $request->payment_method,
-        'amount' => $request->amount,
-        'status' => 'pending',
-        'request_payload' => json_encode(['amount' => $request->amount]),
+    $transactionHandler = TransactionTypeFactory::make($request->type);
+    $data = $transactionHandler->process($request->all(), $gateway);
+    $transaction = \App\Models\Transaction::create([
+        'member_id'    => auth('member')->id(),
+        'type'         => $request->type,
+        'gateway'      => $request->payment_method,
+        'amount'       => $request->amount,
+        'status'       => 'pending',
+        'meta'         => $data['notes'] ?? null,
+        'approval_url' => $data['approval_url'] ?? null,
     ]);
 
-    return response()->json($approval);
+    // return response()->json($transaction);
+    return redirect()->back()->with('success', 'Transaction completed successfully.');
+
 }
 
 
-    // public function handleReturn(Request $request)
-    // {
-    //     $gateway = GatewayFactory::make($request->payment_method);
-    //     $capture = $gateway->capturePayment($request->token);
-
-    //     $payment = Transaction::where('member_id', auth()->id())
-    //         ->where('status', 'pending')
-    //         ->latest()
-    //         ->first();
-
-    //     $payment->update([
-    //         'status' => $capture['status'] === 'COMPLETED' ? 'completed' : 'failed',
-    //         'response_payload' => json_encode($capture),
-    //     ]);
-
-    //     return redirect()->route('dashboard')->with('success', 'Payment completed.');
-    // }
-
-    public function refund(PaymentRequest $payment, Request $request)
+    public function refund(PaymentStatus $payment, Request $request)
     {
-        $gateway = GatewayFactory::make($payment->gateway);
+        // $gateway = GatewayFactory::make($payment->gateway);
 
-        $refund = $gateway->refundPayment($payment->id, $payment->amount, $request->reason ?? '');
+        // $refund = $gateway->refundPayment($payment->id, $payment->amount, $request->reason ?? '');
 
-        $payment->update([
-            'status' => 'refunded',
-            'response_payload' => json_encode($refund),
-        ]);
+        // $payment->update([
+        //     'status' => 'refunded',
+        //     'response_payload' => json_encode($refund),
+        // ]);
 
-        return back()->with('success', 'Payment refunded successfully.');
+        // return back()->with('success', 'Payment refunded successfully.');
     }
 }

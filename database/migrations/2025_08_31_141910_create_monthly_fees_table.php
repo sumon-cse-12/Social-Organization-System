@@ -17,8 +17,10 @@ public function up()
             $table->decimal('amount', 10, 2);
             $table->date('for_month');
             $table->date('paid_date')->nullable();
-            $table->enum('status', ['paid', 'pending', 'overdue'])->default('pending');
             $table->text('notes')->nullable();
+            $table->string('gateway');
+            $table->string('currency', 10)->default('USD');
+            $table->string('status', 20)->default('pending')->index();
             $table->timestamps();
         });
     }
