@@ -79,6 +79,17 @@ const isActive = (url) => page.url === url
             <p>Meetings</p>
           </Link>
         </li>
+        <strong class="text-white mt-3">Blog Management</strong>
+        <li class="nav-item mt-3">
+          <Link
+            href="/admin/blog-categories/index"
+            class="nav-link"
+            :class="{ 'active': isActive('/admin/blog-categories/index') }"
+          >
+            <i class="nav-icon fas fa-plus"></i>
+            <p>Blog Category</p>
+          </Link>
+        </li>
 
       </ul>
     </nav>

@@ -1,13 +1,18 @@
 <script setup>
-import AdminLayout from '@/Layouts/AdminLayout.vue'
-import { ref, watch, reactive } from 'vue'
-import { Link } from '@inertiajs/vue3'
+
+import MemberLayout from '@/Layouts/MemberLayout.vue';
+import { ref, reactive,watch } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import pickBy from 'lodash/pickBy'
 import debounce from 'lodash/debounce'
-import Pagination from '../../Shared/Pagination.vue'
+// import {truncate} from '../../../../utils/helpers'
+import { truncate } from '../../../utils/helpers';
+// import Pagination from '@/Pages/Shared/Pagination.vue';
+import Pagination from '@/Pages/Shared/Pagination.vue';
 
-defineOptions({ layout: AdminLayout })
-
+defineOptions({
+    layout:MemberLayout
+})
 const props = defineProps({
   meetings: Object,
   filters: Object,
@@ -21,15 +26,15 @@ const form = reactive({
 // Submit search with debounce
 const submitSearch = debounce(() => {
   const data = pickBy(form)
-  window.location.href = `/admin/meetings/index?${new URLSearchParams(data).toString()}`
+  window.location.href = `/member/meetings/index?${new URLSearchParams(data).toString()}`
 }, 2000)
 
 watch(form, submitSearch, { deep: true })
 </script>
 
 <template>
-  <div class="container-fluid mt-4">
-    <div class="card main-card">
+  <div class="container">
+   <div class="card main-card">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="card-title">All Meetings</h5>
         <div class="d-flex align-items-center gap-2">
@@ -42,10 +47,6 @@ watch(form, submitSearch, { deep: true })
               placeholder="Search meeting..."
             >
           </div>
-
-          <Link href="/admin/meeting/create" class="btn btn-primary">
-            <i class="fas fa-plus me-2"></i>Add New Meeting
-          </Link>
         </div>
       </div>
 
@@ -57,7 +58,8 @@ watch(form, submitSearch, { deep: true })
               <th>Type</th>
               <th>Agenda</th>
               <th>Date</th>
-              <th class="text-end">Actions</th>
+              <th>View</th>
+              <th class="text-end">Join</th>
             </tr>
           </thead>
           <tbody>
@@ -68,19 +70,23 @@ watch(form, submitSearch, { deep: true })
               </td>
             </tr>
             <tr v-for="meeting in meetings.data" :key="meeting.id">
-              <td>{{ meeting.title || '-' }}</td>
+              <td>{{ truncate(meeting.title,20) }}</td>
               <td>{{ meeting.type || '-' }}</td>
-              <td>{{ meeting.agenda || '-' }}</td>
+              <td>{{ truncate(meeting.agenda, 22)  }}</td>
               <td>{{ meeting.date_time || '-' }}</td>
+              <td>
+                   <Link href="/meeting/details">
+                  <i class="fas fa-eye"></i>
+               </Link>
+              </td>
               <td class="text-end">
-                <button type="button" class="btn btn-info btn-sm">
-                  Action
-                </button>
 
-  <Link :href="`/admin/meeting/details/${meeting.id}`">
-    View Details
-  </Link>
-
+               <Link v-if="meeting.type === 'online'" :href="`/member/meeting/join/${meeting.id}`">
+                Join
+                </Link>
+            <span v-else>
+            offline
+            </span>
               </td>
             </tr>
           </tbody>
@@ -95,7 +101,7 @@ watch(form, submitSearch, { deep: true })
             </small>
           </div>
           <div class="col-auto">
-            <!-- Uncomment when Pagination component is ready -->
+
              <Pagination :links="meetings.links" />
 
           </div>
@@ -104,3 +110,7 @@ watch(form, submitSearch, { deep: true })
     </div>
   </div>
 </template>
+
+<style scoped>
+
+</style>

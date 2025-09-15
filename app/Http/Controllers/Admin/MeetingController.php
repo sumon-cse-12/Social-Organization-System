@@ -11,31 +11,32 @@ use Illuminate\Support\Facades\Auth;
 
 class MeetingController extends Controller
 {
-  public function index(Request $request)
-{
-    $meetings = Meeting::query()
-        ->when($request->input('search'), function ($query, $search) {
-            $query->where('title', 'like', "%{$search}%");
-        })
-        ->latest()
-        ->paginate(10)
-        ->withQueryString()
-        ->through(fn($meeting) => [
-            'id'        => $meeting->id,
-            'title'     => $meeting->title,
-            'type'     => $meeting->type,
-            'date_time' => Carbon::parse($meeting->date_time)->format('d M, Y h:i A'),
-            'agenda'    => $meeting->agenda,
+    public function index(Request $request)
+    {
+        $meetings = Meeting::query()
+            ->when($request->input('search'), function ($query, $search) {
+                $query->where('title', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString()
+            ->through(fn($meeting) => [
+                'id'        => $meeting->id,
+                'title'     => $meeting->title,
+                'type'     => $meeting->type,
+                'date_time' => Carbon::parse($meeting->date_time)->format('d M, Y h:i A'),
+                'agenda'    => $meeting->agenda,
+            ]);
+
+        return Inertia::render('Admin/Meetings/Index', [
+            'meetings' => $meetings,
+            'filters'   => $request->only('search'),
         ]);
-
-    return Inertia::render('Admin/Meetings/Index', [
-        'meetings' => $meetings,
-        'filters'   => $request->only('search'),
-    ]);
-}
+    }
 
 
-    public function create(){
+    public function create()
+    {
         return Inertia::render('Admin/Meetings/Create');
     }
 
@@ -52,12 +53,24 @@ class MeetingController extends Controller
             'minutes'      => 'nullable|string|max:2000',
             'decisions'    => 'nullable|string|max:2000',
         ]);
-      $validated['created_by'] = Auth::id();
-        // Save to database
-        $meeting = Meeting::create($validated);
+        $validated['created_by'] = Auth::id();
 
-        // Redirect back with success flash
+        $meeting = Meeting::create($validated);
         return redirect()->route('admin.meeting.index')
-                         ->with('success', 'Meeting created successfully.');
+            ->with('success', 'Meeting created successfully.');
+    }
+
+   public function details(int $id)
+    {
+
+        $meeting = Meeting::with('members')->findOrFail($id);                                                        
+        $attendedMembers = $meeting->members()
+            ->wherePivot('attendance', 'present')
+            ->get();
+
+        return Inertia::render('Admin/Meetings/Details', [
+            'meeting' => $meeting,
+            'attendedMembers' => $attendedMembers,
+        ]);
     }
 }

@@ -42,4 +42,11 @@ class Meeting extends Model
         )->withPivot('attendance')
          ->withTimestamps();
     }
+
+    public function members()
+    {
+        return $this->belongsToMany(Member::class, 'meeting_member', 'meeting_id', 'member_id')
+                    ->withPivot('attendance')
+                    ->withTimestamps();
+    }
 }

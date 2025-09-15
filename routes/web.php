@@ -3,6 +3,7 @@
 use Inertia\Inertia;
 use Srmklive\PayPal\Services\PayPal;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\FrontController;
 use App\Http\Controllers\Member\FeeController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\MeetingController;
@@ -10,9 +11,10 @@ use App\Http\Controllers\Member\ProfileController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\MemberLoginController;
+use App\Http\Controllers\Admin\BlogCategoryController;
 use App\Http\Controllers\Auth\MemberRegisterController;
 use App\Http\Controllers\Admin\PaymentSettingsController;
-
+use App\Http\Controllers\Member\MemberDashboardController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -24,8 +26,10 @@ use App\Http\Controllers\Admin\PaymentSettingsController;
 |
 */
 
-use App\Http\Controllers\Member\MemberDashboardController;
+use App\Http\Controllers\Member\MeetingController as MemberMeetingController;
 
+
+Route::get('/', [FrontController::class, 'index'])->name('index');
 
 
 Route::middleware('guest')->group(function () {
@@ -48,6 +52,15 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/meetings/index', [MeetingController::class, 'index'])->name('admin.meeting.index');
     Route::get('/meeting/create', [MeetingController::class, 'create'])->name('admin.meeting.create');
     Route::post('/meeting/store', [MeetingController::class, 'store'])->name('admin.meeting.store');
+    Route::get('/meeting/details/{id}', [MeetingController::class, 'details'])->name('admin.meeting.details');
+
+    //Blog Category
+
+    Route::get('/blog-categories/index', [BlogCategoryController::class, 'index'])->name('admin.blog.category.index');
+    Route::get('/blog-category/create', [BlogCategoryController::class, 'create'])->name('admin.blog.category.create');
+    Route::post('/blog-category/store', [BlogCategoryController::class, 'store'])->name('admin.blog.category.store');
+
+    //
 
 
 });
@@ -77,6 +90,13 @@ Route::prefix('member')->group(function () {
 
         Route::get('handleReturn', [FeeController::class, 'handleReturn'])->name('handleReturn');
         Route::get('handleCancel', [FeeController::class, 'handleCancel'])->name('handleCancel');
+
+        //Member
+
+        Route::get('/meetings/index', [MemberMeetingController::class, 'index'])->name('member.meetings.index');
+        Route::get('/meeting/join/{id}', [MemberMeetingController::class, 'joinMeeting'])->name('member.meeting.join');
+
+
     });
 });
 

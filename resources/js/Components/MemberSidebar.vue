@@ -60,6 +60,17 @@ const isActive = (url) => page.url.includes(url)
           </Link>
         </li>
 
+        <li class="nav-item">
+          <Link
+            href="/member/meetings/index"
+            class="nav-link"
+            :class="{ 'active': isActive('meetings') }"
+          >
+            <i class="nav-icon fas fa-user"></i>
+            <p>Meetings</p>
+          </Link>
+        </li>
+
       </ul>
     </nav>
   </div>
