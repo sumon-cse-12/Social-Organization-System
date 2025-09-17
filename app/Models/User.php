@@ -47,4 +47,17 @@ class User extends Authenticatable
     {
         return $this->hasMany(Meeting::class, 'created_by');
     }
+
+      public function sentMessages()
+    {
+        return $this->morphMany(Message::class, 'sender', 'sender_type', 'sender_id');
+    }
+
+    /**
+     * Messages received by admin
+     */
+    public function receivedMessages()
+    {
+        return $this->morphMany(Message::class, 'receiver', 'receiver_type', 'receiver_id');
+    }
 }

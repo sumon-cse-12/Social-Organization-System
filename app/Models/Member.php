@@ -52,4 +52,15 @@ class Member extends Authenticatable
         )->withPivot('attendance')
          ->withTimestamps();
     }
+
+    public function sentMessages()
+    {
+        return $this->morphMany(Message::class, 'sender', 'sender_type', 'sender_id');
+    }
+
+
+    public function receivedMessages()
+    {
+        return $this->morphMany(Message::class, 'receiver', 'receiver_type', 'receiver_id');
+    }
 }

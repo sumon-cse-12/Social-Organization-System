@@ -19,6 +19,7 @@ trait HandlesImageUpload
     public function uploadImage(UploadedFile $file, string $folder = 'uploads', bool $deleteOld = false, ?string $oldFile = null): string
     {
 
+
         if ($deleteOld && $oldFile) {
             Storage::disk('public')->delete($oldFile);
         }

@@ -59,9 +59,9 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/blog-categories/index', [BlogCategoryController::class, 'index'])->name('admin.blog.category.index');
     Route::get('/blog-category/create', [BlogCategoryController::class, 'create'])->name('admin.blog.category.create');
     Route::post('/blog-category/store', [BlogCategoryController::class, 'store'])->name('admin.blog.category.store');
-
-    //
-
+    Route::get('/blog-category/edit/{id}', [BlogCategoryController::class, 'edit'])->name('admin.blog.category.edit');
+    Route::put('/blog-category/update/{id}', [BlogCategoryController::class, 'update'])->name('admin.blog.category.update');
+    Route::delete('/blog-category/delete/{id}', [BlogCategoryController::class, 'destroy'])->name('admin.blog.category.destroy');
 
 });
 
